@@ -369,7 +369,7 @@ function extractJSON(text) {
 // ── API CALL ────────────────────────────────────────────────────
 async function callAPI(t, query) {
   const body = {
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-3-5-sonnet-latest',
     max_tokens: 2000,
     system: SYSTEM[t],
     tools: [{ type: 'web_search_20250305', name: 'web_search' }],
