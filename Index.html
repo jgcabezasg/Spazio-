@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Spazio · Codificador Médico</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
+.app{max-width:430px;margin:0 auto;min-height:100vh;background:#f2f4f7;display:flex;flex-direction:column}
+
+/* HEADER */
+.header{background:linear-gradient(150deg,#12203d 0%,#1b2f52 55%,#163348 100%);padding:52px 20px 22px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:rgba(255,255,255,.03);border-radius:50%}
+.header::after{content:'';position:absolute;top:30px;right:30px;width:90px;height:90px;background:rgba(90,180,230,.06);border-radius:50%}
+.brand{display:flex;align-items:center;gap:11px;position:relative;z-index:1}
+.brand-icon{width:38px;height:38px;background:linear-gradient(135deg,#5ab4e8,#2e88c8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;box-shadow:0 4px 14px rgba(90,180,232,.35);flex-shrink:0}
+.brand-name{font-size:20px;font-weight:300;letter-spacing:4px;text-transform:uppercase;color:#fff;line-height:1}
+.brand-sub{font-size:9px;letter-spacing:3.5px;color:#5ab4e8;text-transform:uppercase;font-weight:700;margin-top:2px}
+.header-subtitle{font-size:12.5px;color:rgba(255,255,255,.42);margin-top:14px;position:relative;z-index:1}
+
+/* TABS */
+.tabs{display:flex;gap:8px;margin-top:18px;position:relative;z-index:1}
+.tab{flex:1;padding:11px 8px;border-radius:13px;border:none;cursor:pointer;background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);transition:all .22s;outline:1.5px solid transparent}
+.tab.active{background:rgba(255,255,255,.14);color:#fff;outline-color:rgba(255,255,255,.18)}
+.tab-icon{font-size:19px;display:block;margin-bottom:3px}
+.tab-label{font-size:13px;font-weight:700;letter-spacing:.8px;display:block}
+.tab-sub{font-size:10px;opacity:.65;display:block}
+
+/* SECTION LABEL */
+.section-label{display:flex;align-items:center;gap:8px;padding:16px 16px 0}
+.section-bar{width:3px;height:18px;border-radius:2px;flex-shrink:0}
+.bar-cie{background:#2563eb}.bar-cpt{background:#0e9e6e}
+.section-text{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#9aa2b0;font-weight:700}
+
+/* SEARCH */
+.search-wrap{padding:12px 16px 10px}
+.search-box{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #e4e7ed;border-radius:14px;padding:4px 4px 4px 16px;transition:border-color .2s;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.search-box.focused-cie{border-color:#2563eb}
+.search-box.focused-cpt{border-color:#0e9e6e}
+.search-input{flex:1;border:none;outline:none;background:none;font-size:15px;color:#1a2030;font-family:'Lora',serif;padding:10px 0;min-width:0}
+.search-input::placeholder{color:#b8bec8;font-family:'DM Sans',sans-serif;font-size:14px}
+.search-btn{border:none;border-radius:11px;padding:10px 22px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap}
+.btn-cie{background:#2563eb;color:#fff}
+.btn-cpt{background:#0e9e6e;color:#fff}
+.search-btn:disabled{background:#e4e7ed!important;color:#9aa2b0!important;cursor:not-allowed}
+.search-btn:active:not(:disabled){transform:scale(.96)}
+
+/* STATUS */
+.status-box{margin:0 16px 10px;padding:11px 14px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:8px}
+.status-error{background:#fff1f0;border:1px solid #ffd0cc;color:#c0392b}
+.status-searching{background:#f0f7ff;border:1px solid #bfdbfe;color:#1d4ed8}
+.status-web{background:#fefce8;border:1px solid #fde68a;color:#92400e}
+
+/* HISTORY */
+.history{padding:2px 16px 12px}
+.history-title{font-size:10px;letter-spacing:2.5px;color:#b0b8c4;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.history-chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:20px;padding:5px 13px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid;transition:opacity .15s}
+.chip-cie{background:#eff6ff;border-color:#93c5fd;color:#2563eb}
+.chip-cpt{background:#f0fdf4;border-color:#6ee7b7;color:#0e9e6e}
+.chip:active{opacity:.7}
+
+/* SKELETON */
+.skeletons{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.skeleton{height:74px;border-radius:13px;background:linear-gradient(90deg,#e8eaed 25%,#dde0e5 50%,#e8eaed 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* RESULTS */
+.results{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.result-card{background:#fff;border-radius:14px;border:1.5px solid #eef0f4;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;align-items:stretch;transition:border-color .15s}
+.result-card.top-card{border-color:#e0eaff;box-shadow:0 3px 12px rgba(37,99,235,.08)}
+.result-card.top-card-cpt{border-color:#d1f0e4;box-shadow:0 3px 12px rgba(14,158,110,.08)}
+.result-card.extra-card{opacity:.88}
+.rank-col{width:32px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#c8d0da;border-right:1.5px solid #f0f2f5;flex-shrink:0}
+.rank-col.top-rank-cie{color:#2563eb;background:#f5f8ff}
+.rank-col.top-rank-cpt{color:#0e9e6e;background:#f2fbf7}
+.code-col{padding:14px 12px;display:flex;align-items:center;border-right:1.5px solid #f0f2f5;flex-shrink:0}
+.code-badge{border-radius:8px;padding:5px 10px;text-align:center;min-width:58px}
+.badge-cie{background:#eff6ff}.badge-cpt{background:#f0fdf4}
+.code-num{font-family:'Courier New',monospace;font-size:15px;font-weight:700;letter-spacing:.5px;display:block;white-space:nowrap}
+.num-cie{color:#2563eb}.num-cpt{color:#0e9e6e}
+.diag-col{flex:1;padding:14px 11px;min-width:0}
+.diag-label{font-size:9px;letter-spacing:2px;color:#b0b8c4;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.diag-text{font-size:13.5px;color:#1a2030;line-height:1.35;font-family:'Lora',serif;word-break:break-word}
+.copy-col{padding:14px 11px;display:flex;align-items:center;flex-shrink:0}
+.copy-btn{border-radius:8px;padding:6px 10px;font-size:10.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.8px;transition:all .18s;border:1px solid #e0e4ea;background:#f6f7f9;color:#6a7280}
+.copy-btn.copied{background:#e8f5e9;border-color:#81c784;color:#2e7d32}
+.copy-btn:active{transform:scale(.94)}
+.back-btn{display:block;width:100%;background:none;border:none;color:#b0b8c4;font-size:11.5px;font-weight:600;font-family:'DM Sans',sans-serif;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;padding:10px 0;text-align:center;margin-top:2px}
+/* SECTION DIVIDERS */
+.group-label{display:flex;align-items:center;gap:8px;padding:4px 0 2px}
+.group-label-text{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;font-weight:700;white-space:nowrap}
+.group-label-line{flex:1;height:1px;background:#e8eaed}
+.label-top-cie{color:#2563eb}.label-top-cpt{color:#0e9e6e}
+.label-extra{color:#b0b8c4}
+
+/* SUGGESTION TAG */
+.suggest-tag{display:inline-block;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:10px;font-weight:600;letter-spacing:.5px;padding:2px 7px;border-radius:20px;margin-bottom:5px;font-family:'DM Sans',sans-serif}
+
+/* EMPTY */
+.empty{text-align:center;padding:44px 20px;color:#c8cdd5}
+.empty-icon{font-size:42px;margin-bottom:12px;opacity:.5}
+.empty-text{font-size:11.5px;letter-spacing:2px;text-transform:uppercase;font-weight:600;color:#c0c8d2}
+
+.panel{display:none}.panel.active{display:block}
+
+/* FOOTER */
+.footer{margin-top:auto;padding:13px 16px;text-align:center;border-top:1px solid #e4e7ed;background:#fff}
+.footer-text{font-size:10px;color:#c0c8d2;letter-spacing:1.2px;text-transform:uppercase;font-weight:600}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">✚</div>
+      <div>
+        <div class="brand-name">SPAZIO</div>
+        <div class="brand-sub">CLÍNICA</div>
+      </div>
+    </div>
+    <div class="header-subtitle">Codificador Médico</div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('cie')" id="tab-cie">
+        <span class="tab-icon">🩺</span>
+        <span class="tab-label">CIE-9</span>
+        <span class="tab-sub">Diagnósticos</span>
+      </button>
+      <button class="tab" onclick="switchTab('cpt')" id="tab-cpt">
+        <span class="tab-icon">⚕</span>
+        <span class="tab-label">CPT</span>
+        <span class="tab-sub">Procedimientos</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CIE-9 -->
+  <div class="panel active" id="panel-cie">
+    <div class="section-label">
+      <div class="section-bar bar-cie"></div>
+      <div class="section-text">Diagnósticos · Sin decimales</div>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box" id="box-cie">
+        <input class="search-input" id="input-cie" placeholder="Ej: endometriosis, miomatosis…"
+          oninput="onInput('cie')" onkeydown="onKey(event,'cie')"
+          onfocus="document.getElementById('box-cie').classList.add('focused-cie')"
+          onblur="document.getElementById('box-cie').classList.remove('focused-cie')"/>
+        <button class="search-btn btn-cie" id="btn-cie" onclick="doSearch('cie')" disabled>Buscar</button>
+      </div>
+    </div>
+    <div id="status-cie"></div>
+    <div id="history-cie"></div>
+    <div id="loading-cie"></div>
+    <div id="results-cie"></div>
+    <div id="empty-cie" class="empty">
+      <div class="empty-icon">🩺</div>
+      <div class="empty-text">Escribe para buscar</div>
+    </div>
+  </div>
+
+  <!-- CPT -->
+  <div class="panel" id="panel-cpt">
+    <div class="section-label">
+      <div class="section-bar bar-cpt"></div>
+      <div class="section-text">Procedimientos y Cirugías</div>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box" id="box-cpt">
+        <input class="search-input" id="input-cpt" placeholder="Ej: histerectomía, laparoscopía…"
+          oninput="onInput('cpt')" onkeydown="onKey(event,'cpt')"
+          onfocus="document.getElementById('box-cpt').classList.add('focused-cpt')"
+          onblur="document.getElementById('box-cpt').classList.remove('focused-cpt')"/>
+        <button class="search-btn btn-cpt" id="btn-cpt" onclick="doSearch('cpt')" disabled>Buscar</button>
+      </div>
+    </div>
+    <div id="status-cpt"></div>
+    <div id="history-cpt"></div>
+    <div id="loading-cpt"></div>
+    <div id="results-cpt"></div>
+    <div id="empty-cpt" class="empty">
+      <div class="empty-icon">⚕️</div>
+      <div class="empty-text">Escribe para buscar</div>
+    </div>
+  </div>
+
+  <div class="footer"><div class="footer-text">Spazio Clínica · Uso interno</div></div>
+</div>
+
+<script>
+// ── SYSTEM PROMPTS ──────────────────────────────────────────────
+const SYSTEM = {
+  cie: `Eres un codificador médico experto en ICD-9/CIE-9 para seguros médicos.
+
+Si no reconoces el término exacto, usa la herramienta web_search para buscar a qué condición médica se refiere y cuál es su código ICD-9 más apropiado.
+
+REGLAS:
+- Códigos ICD-9/CIE-9 SIN decimales (ej: 617, 625, 789)
+- NO ICD-10, NO decimales
+- Devuelve EXACTAMENTE 6 opciones ordenadas de mayor a menor probabilidad
+- Las primeras 3 son las más probables y relevantes (top)
+- Las siguientes 3 son opciones adicionales relacionadas (extra)
+- Si el término es ambiguo o poco común, busca en web primero
+
+RESPONDE ÚNICAMENTE con este JSON (sin markdown, sin texto extra, sin explicaciones):
+{"results":[{"code":"617","diagnosis":"Endometriosis"},{"code":"625","diagnosis":"Dolor pélvico"},{"code":"626","diagnosis":"Trastornos menstruales"},{"code":"614","diagnosis":"Enfermedad inflamatoria pélvica"},{"code":"218","diagnosis":"Leiomioma del útero"},{"code":"629","diagnosis":"Otros trastornos genitales femeninos"}]}`,
+
+  cpt: `Eres un codificador médico experto en códigos CPT para seguros médicos.
+
+Si no reconoces el procedimiento exacto, usa la herramienta web_search para buscar a qué procedimiento se refiere y cuál es su código CPT más apropiado.
+
+REGLAS:
+- Códigos CPT de 5 dígitos (ej: 58150, 49320, 43239)
+- NO ICD
+- Devuelve EXACTAMENTE 6 opciones ordenadas de mayor a menor probabilidad
+- Las primeras 3 son las más probables y relevantes (top)
+- Las siguientes 3 son opciones adicionales relacionadas (extra)
+- Si el término es ambiguo, busca en web primero
+
+RESPONDE ÚNICAMENTE con este JSON (sin markdown, sin texto extra, sin explicaciones):
+{"results":[{"code":"58150","diagnosis":"Histerectomía abdominal total"},{"code":"58570","diagnosis":"Histerectomía laparoscópica total"},{"code":"58260","diagnosis":"Histerectomía vaginal"},{"code":"58180","diagnosis":"Histerectomía abdominal subtotal"},{"code":"58275","diagnosis":"Histerectomía vaginal con reparación"},{"code":"58552","diagnosis":"Histerectomía laparoscópica vaginal"}]}`
+};
+
+// ── STATE ───────────────────────────────────────────────────────
+const history = { cie: [], cpt: [] };
+const busy    = { cie: false, cpt: false };
+
+// ── TABS ────────────────────────────────────────────────────────
+function switchTab(t) {
+  ['cie','cpt'].forEach(id => {
+    document.getElementById('panel-'+id).classList.toggle('active', id===t);
+    document.getElementById('tab-'+id).classList.toggle('active', id===t);
+  });
+}
+
+function onInput(t) {
+  const v = document.getElementById('input-'+t).value.trim();
+  document.getElementById('btn-'+t).disabled = !v || busy[t];
+}
+function onKey(e,t){ if(e.key==='Enter') doSearch(t); }
+
+// ── UI HELPERS ──────────────────────────────────────────────────
+function setStatus(t, type, msg) {
+  const el = document.getElementById('status-'+t);
+  if (!msg) { el.innerHTML=''; return; }
+  const icons = { error:'⚠️', searching:'⏳', web:'🔍' };
+  el.innerHTML = `<div class="status-box status-${type}">${icons[type]||''} ${msg}</div>`;
+}
+
+function setLoading(t, show) {
+  document.getElementById('loading-'+t).innerHTML = show
+    ? `<div class="skeletons">${[.8,.6,.4].map(o=>`<div class="skeleton" style="opacity:${o}"></div>`).join('')}</div>`
+    : '';
+}
+
+function setEmpty(t, show) {
+  document.getElementById('empty-'+t).style.display = show ? 'block' : 'none';
+}
+
+function renderHistory(t) {
+  const h = history[t];
+  const el = document.getElementById('history-'+t);
+  if (!h.length) { el.innerHTML=''; return; }
+  el.innerHTML = `<div class="history">
+    <div class="history-title">Recientes</div>
+    <div class="history-chips">
+      ${h.map((item,i)=>`<button class="chip chip-${t}" onclick="loadHist('${t}',${i})">${item.query}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function loadHist(t,i) {
+  const item = history[t][i];
+  renderResults(t, item.results, item.usedWeb);
+  document.getElementById('history-'+t).innerHTML='';
+  setEmpty(t,false);
+}
+
+function renderResults(t, results, usedWeb) {
+  const top   = results.slice(0, 3);
+  const extra = results.slice(3);
+
+  function card(r, i, isTop) {
+    const globalIdx = i < 3 ? i : i; // index for copy btn id
+    const rankClass = isTop ? `top-rank-${t}` : '';
+    const cardClass = isTop ? `top-card${t==='cpt'?'-cpt':''}` : 'extra-card';
+    const webTag = usedWeb && i===0 ? '<span class="suggest-tag">🔍 Sugerencia web</span>' : '';
+    return `
+    <div class="result-card ${cardClass}">
+      <div class="rank-col ${rankClass}">${i+1}</div>
+      <div class="code-col">
+        <div class="code-badge badge-${t}">
+          <span class="code-num num-${t}">${r.code}</span>
+        </div>
+      </div>
+      <div class="diag-col">
+        ${webTag}
+        <div class="diag-label">Diagnóstico</div>
+        <div class="diag-text">${r.diagnosis}</div>
+      </div>
+      <div class="copy-col">
+        <button class="copy-btn" id="cp-${t}-${i}" onclick="doCopy('${r.code}','${t}',${i})">COPIAR</button>
+      </div>
+    </div>`;
+  }
+
+  const topCards   = top.map((r,i)   => card(r, i,   true)).join('');
+  const extraCards = extra.map((r,i) => card(r, i+3, false)).join('');
+
+  const extraSection = extra.length ? `
+    <div class="group-label">
+      <span class="group-label-text label-extra">Opciones adicionales</span>
+      <div class="group-label-line"></div>
+    </div>
+    ${extraCards}` : '';
+
+  document.getElementById('results-'+t).innerHTML = `
+    <div class="results">
+      <div class="group-label">
+        <span class="group-label-text label-top-${t}">★ Más probables</span>
+        <div class="group-label-line"></div>
+      </div>
+      ${topCards}
+      ${extraSection}
+      <button class="back-btn" onclick="clearAll('${t}')">← Nueva búsqueda</button>
+    </div>`;
+}
+
+function doCopy(code,t,i) {
+  try { navigator.clipboard.writeText(code); } catch(e) {
+    const ta=document.createElement('textarea'); ta.value=code;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  const btn=document.getElementById(`cp-${t}-${i}`);
+  btn.textContent='✓'; btn.classList.add('copied');
+  setTimeout(()=>{ btn.textContent='COPIAR'; btn.classList.remove('copied'); },1600);
+}
+
+function clearAll(t) {
+  document.getElementById('results-'+t).innerHTML='';
+  document.getElementById('input-'+t).value='';
+  document.getElementById('btn-'+t).disabled=true;
+  setStatus(t,'','');
+  setEmpty(t,true);
+  renderHistory(t);
+}
+
+// ── JSON EXTRACTOR (robust) ─────────────────────────────────────
+function extractJSON(text) {
+  if (!text) return null;
+  // 1. Direct parse
+  try { const p=JSON.parse(text.trim()); if(p&&p.results) return p; } catch(e){}
+  // 2. Strip markdown fences
+  const stripped = text.replace(/```(?:json)?[\s\S]*?```/g,'').trim();
+  try { const p=JSON.parse(stripped); if(p&&p.results) return p; } catch(e){}
+  // 3. Find first { ... } block
+  const m = text.match(/\{[\s\S]*?"results"[\s\S]*?\}/);
+  if(m){ try { const p=JSON.parse(m[0]); if(p&&p.results) return p; } catch(e){} }
+  // 4. Find any JSON object
+  const m2 = text.match(/\{[\s\S]*\}/);
+  if(m2){ try { const p=JSON.parse(m2[0]); if(p&&p.results) return p; } catch(e){} }
+  return null;
+}
+
+// ── API CALL ────────────────────────────────────────────────────
+async function callAPI(t, query) {
+  const body = {
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2000,
+    system: SYSTEM[t],
+    tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+    messages: [{ role: 'user', content: query }]
+  };
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || `HTTP ${res.status}`);
+  }
+
+  return res.json();
+}
+
+// ── PARSE RESPONSE ──────────────────────────────────────────────
+function parseResponse(data) {
+  const blocks = data.content || [];
+  let usedWeb = blocks.some(b => b.type === 'tool_use' && b.name === 'web_search');
+
+  // Collect all text blocks, try each for valid JSON
+  const texts = blocks.filter(b => b.type === 'text').map(b => b.text);
+
+  // Try last text block first (most likely the final answer)
+  for (let i = texts.length - 1; i >= 0; i--) {
+    const parsed = extractJSON(texts[i]);
+    if (parsed) return { parsed, usedWeb };
+  }
+  return { parsed: null, usedWeb };
+}
+
+// ── MAIN SEARCH ─────────────────────────────────────────────────
+async function doSearch(t) {
+  const q = document.getElementById('input-'+t).value.trim();
+  if (!q || busy[t]) return;
+
+  busy[t] = true;
+  document.getElementById('btn-'+t).disabled = true;
+  document.getElementById('btn-'+t).textContent = '...';
+  document.getElementById('results-'+t).innerHTML = '';
+  document.getElementById('history-'+t).innerHTML = '';
+  setStatus(t, 'searching', 'Buscando código…');
+  setLoading(t, true);
+  setEmpty(t, false);
+
+  try {
+    const data = await callAPI(t, q);
+    const { parsed, usedWeb } = parseResponse(data);
+
+    setLoading(t, false);
+
+    if (usedWeb) setStatus(t, 'web', 'No se encontró directamente · Sugerencia basada en búsqueda web');
+    else setStatus(t, '', '');
+
+    if (parsed && parsed.results && parsed.results.length) {
+      const h = history[t].filter(x => x.query !== q);
+      history[t] = [{ query:q, results:parsed.results, usedWeb }, ...h].slice(0,8);
+      document.getElementById('input-'+t).value = '';
+      renderResults(t, parsed.results, usedWeb);
+    } else {
+      setStatus(t, 'error', 'No se pudo obtener un código. Intenta con otro término.');
+      setEmpty(t, false);
+    }
+
+  } catch(err) {
+    setLoading(t, false);
+    setStatus(t, 'error', 'Error de conexión. Verifica tu plan Claude Pro e intenta de nuevo.');
+    console.error('[Spazio]', err);
+  } finally {
+    busy[t] = false;
+    document.getElementById('btn-'+t).textContent = 'Buscar';
+    onInput(t);
+  }
+}
+</script>
+</body>
+</html>
