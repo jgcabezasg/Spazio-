@@ -5,11 +5,113 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>Spazio · Codificador Médico</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
 .app{max-width:430px;margin:0 auto;min-height:100vh;background:#f2f4f7;display:flex;flex-direction:column}
 
+/* ═══════════════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════════════ */
+#login-screen{
+  position:fixed;inset:0;z-index:1000;
+  background:linear-gradient(160deg,#0d1828 0%,#152340 50%,#0f2035 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;
+}
+.login-logo{display:flex;align-items:center;gap:13px;margin-bottom:40px}
+.login-icon{width:52px;height:52px;background:linear-gradient(135deg,#5ab4e8,#2e88c8);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;box-shadow:0 6px 20px rgba(90,180,232,.4)}
+.login-brand-name{font-size:26px;font-weight:300;letter-spacing:5px;color:#fff;text-transform:uppercase}
+.login-brand-sub{font-size:10px;letter-spacing:4px;color:#5ab4e8;text-transform:uppercase;font-weight:700;margin-top:3px}
+.login-card{width:100%;max-width:360px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px 28px;backdrop-filter:blur(10px)}
+.login-title{font-size:13px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:600;margin-bottom:24px;text-align:center}
+.login-field{margin-bottom:16px}
+.login-label{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px}
+.login-input{width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.12);border-radius:11px;padding:13px 16px;color:#fff;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.login-input::placeholder{color:rgba(255,255,255,.25)}
+.login-input:focus{border-color:#5ab4e8}
+.login-btn{width:100%;margin-top:8px;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.login-btn:hover{background:linear-gradient(135deg,#3b82f6,#2563eb);transform:translateY(-1px)}
+.login-btn:active{transform:scale(.98)}
+.login-btn:disabled{background:rgba(255,255,255,.1);color:rgba(255,255,255,.3);cursor:not-allowed;transform:none}
+.login-error{margin-top:14px;padding:10px 14px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:9px;color:#fca5a5;font-size:13px;text-align:center;display:none}
+.login-footer{margin-top:32px;font-size:10px;color:rgba(255,255,255,.2);letter-spacing:1.5px;text-transform:uppercase;text-align:center}
+
+/* ═══════════════════════════════════════
+   HEADER USER BAR
+═══════════════════════════════════════ */
+.user-bar{display:flex;align-items:center;justify-content:space-between;margin-top:12px;position:relative;z-index:1}
+.user-greeting{font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.5px}
+.user-greeting span{color:rgba(255,255,255,.75);font-weight:600}
+.header-actions{display:flex;gap:6px;align-items:center}
+.btn-admin{background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.25);border-radius:8px;padding:5px 11px;color:#fde68a;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px;transition:all .15s}
+.btn-admin:hover{background:rgba(250,204,21,.2)}
+.btn-logout{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:5px 11px;color:rgba(255,255,255,.5);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px;transition:all .15s}
+.btn-logout:hover{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+
+/* ═══════════════════════════════════════
+   ADMIN PANEL
+═══════════════════════════════════════ */
+#admin-panel{
+  position:fixed;inset:0;z-index:999;
+  background:#f2f4f7;
+  display:none;flex-direction:column;
+  max-width:430px;margin:0 auto;
+  overflow-y:auto;
+}
+.admin-header{background:linear-gradient(150deg,#12203d,#1b2f52);padding:52px 20px 20px;position:sticky;top:0;z-index:2}
+.admin-header-row{display:flex;align-items:center;justify-content:space-between}
+.admin-title{font-size:16px;font-weight:600;color:#fff;letter-spacing:.5px}
+.admin-back{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:9px;padding:7px 14px;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.admin-back:hover{background:rgba(255,255,255,.18)}
+.admin-body{padding:20px 16px;display:flex;flex-direction:column;gap:14px}
+/* New user form */
+.admin-section-title{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#9aa2b0;font-weight:700;margin-bottom:10px}
+.admin-card{background:#fff;border-radius:16px;border:1.5px solid #eef0f4;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.admin-form-row{display:flex;gap:8px;margin-bottom:10px}
+.admin-form-row:last-child{margin-bottom:0}
+.admin-field{flex:1;display:flex;flex-direction:column;gap:4px}
+.admin-field-label{font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:#9aa2b0;font-weight:700}
+.admin-input{border:1.5px solid #e4e7ed;border-radius:9px;padding:9px 12px;font-size:13.5px;font-family:'DM Sans',sans-serif;color:#1a2030;outline:none;transition:border-color .18s;width:100%;background:#fafbfc}
+.admin-input:focus{border-color:#2563eb;background:#fff}
+.admin-select{border:1.5px solid #e4e7ed;border-radius:9px;padding:9px 12px;font-size:13.5px;font-family:'DM Sans',sans-serif;color:#1a2030;outline:none;background:#fafbfc;width:100%;cursor:pointer}
+.admin-btn-create{width:100%;padding:11px;background:#2563eb;border:none;border-radius:10px;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s;margin-top:4px}
+.admin-btn-create:hover{background:#1d4ed8}
+.admin-btn-create:disabled{background:#e4e7ed;color:#9aa2b0;cursor:not-allowed}
+/* User list */
+.user-item{background:#fff;border-radius:14px;border:1.5px solid #eef0f4;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#2563eb;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:14px;font-weight:600;color:#1a2030}
+.user-meta{font-size:11px;color:#9aa2b0;margin-top:1px}
+.user-role-badge{font-size:9.5px;font-weight:700;letter-spacing:.8px;padding:2px 7px;border-radius:20px;text-transform:uppercase}
+.role-admin{background:#fef3c7;color:#92400e}
+.role-user{background:#eff6ff;color:#2563eb}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-active{background:#22c55e}.dot-inactive{background:#d1d5db}
+.user-actions{display:flex;gap:5px;flex-shrink:0}
+.ua-btn{border:1px solid #e4e7ed;border-radius:7px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;background:#f8f9fa;color:#6a7280}
+.ua-btn:hover{border-color:#d1d5db;background:#f0f2f5}
+.ua-btn.danger:hover{background:#fff1f0;border-color:#ffd0cc;color:#c0392b}
+.ua-btn.toggle-on{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+.ua-btn.toggle-off{background:#fef3c7;border-color:#fde68a;color:#92400e}
+/* Admin status messages */
+.admin-msg{padding:10px 14px;border-radius:9px;font-size:13px;text-align:center;margin-bottom:4px;display:none}
+.admin-msg.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.admin-msg.error{background:#fff1f0;border:1px solid #ffd0cc;color:#c0392b}
+/* Edit password modal */
+#edit-modal{position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:24px}
+.edit-modal-card{background:#fff;border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.edit-modal-title{font-size:15px;font-weight:600;color:#1a2030;margin-bottom:18px}
+.edit-modal-actions{display:flex;gap:8px;margin-top:18px}
+.edit-modal-cancel{flex:1;padding:11px;background:#f2f4f7;border:none;border-radius:10px;color:#6a7280;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.edit-modal-save{flex:1;padding:11px;background:#2563eb;border:none;border-radius:10px;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* ═══════════════════════════════════════
+   EXISTING APP STYLES (UNCHANGED)
+═══════════════════════════════════════ */
 /* HEADER */
 .header{background:linear-gradient(150deg,#12203d 0%,#1b2f52 55%,#163348 100%);padding:52px 20px 22px;position:relative;overflow:hidden}
 .header::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:rgba(255,255,255,.03);border-radius:50%}
@@ -19,7 +121,6 @@ html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
 .brand-name{font-size:20px;font-weight:300;letter-spacing:4px;text-transform:uppercase;color:#fff;line-height:1}
 .brand-sub{font-size:9px;letter-spacing:3.5px;color:#5ab4e8;text-transform:uppercase;font-weight:700;margin-top:2px}
 .header-subtitle{font-size:12.5px;color:rgba(255,255,255,.42);margin-top:14px;position:relative;z-index:1}
-
 /* TABS */
 .tabs{display:flex;gap:8px;margin-top:18px;position:relative;z-index:1}
 .tab{flex:1;padding:11px 8px;border-radius:13px;border:none;cursor:pointer;background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);transition:all .22s;outline:1.5px solid transparent}
@@ -27,13 +128,11 @@ html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
 .tab-icon{font-size:19px;display:block;margin-bottom:3px}
 .tab-label{font-size:13px;font-weight:700;letter-spacing:.8px;display:block}
 .tab-sub{font-size:10px;opacity:.65;display:block}
-
 /* SECTION LABEL */
 .section-label{display:flex;align-items:center;gap:8px;padding:16px 16px 0}
 .section-bar{width:3px;height:18px;border-radius:2px;flex-shrink:0}
 .bar-cie{background:#2563eb}.bar-cpt{background:#0e9e6e}
 .section-text{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#9aa2b0;font-weight:700}
-
 /* SEARCH */
 .search-wrap{padding:12px 16px 10px}
 .search-box{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #e4e7ed;border-radius:14px;padding:4px 4px 4px 16px;transition:border-color .2s;box-shadow:0 1px 4px rgba(0,0,0,.05)}
@@ -46,13 +145,11 @@ html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
 .btn-cpt{background:#0e9e6e;color:#fff}
 .search-btn:disabled{background:#e4e7ed!important;color:#9aa2b0!important;cursor:not-allowed}
 .search-btn:active:not(:disabled){transform:scale(.96)}
-
 /* STATUS */
 .status-box{margin:0 16px 10px;padding:11px 14px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:8px}
 .status-error{background:#fff1f0;border:1px solid #ffd0cc;color:#c0392b}
 .status-searching{background:#f0f7ff;border:1px solid #bfdbfe;color:#1d4ed8}
 .status-web{background:#fefce8;border:1px solid #fde68a;color:#92400e}
-
 /* HISTORY */
 .history{padding:2px 16px 12px}
 .history-title{font-size:10px;letter-spacing:2.5px;color:#b0b8c4;text-transform:uppercase;font-weight:700;margin-bottom:8px}
@@ -61,12 +158,10 @@ html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
 .chip-cie{background:#eff6ff;border-color:#93c5fd;color:#2563eb}
 .chip-cpt{background:#f0fdf4;border-color:#6ee7b7;color:#0e9e6e}
 .chip:active{opacity:.7}
-
 /* SKELETON */
 .skeletons{padding:0 16px;display:flex;flex-direction:column;gap:10px}
 .skeleton{height:74px;border-radius:13px;background:linear-gradient(90deg,#e8eaed 25%,#dde0e5 50%,#e8eaed 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
 /* RESULTS */
 .results{padding:0 16px;display:flex;flex-direction:column;gap:10px}
 .result-card{background:#fff;border-radius:14px;border:1.5px solid #eef0f4;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;align-items:stretch;transition:border-color .15s}
@@ -95,24 +190,116 @@ html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
 .group-label-line{flex:1;height:1px;background:#e8eaed}
 .label-top-cie{color:#2563eb}.label-top-cpt{color:#0e9e6e}
 .label-extra{color:#b0b8c4}
-
 /* SUGGESTION TAG */
 .suggest-tag{display:inline-block;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:10px;font-weight:600;letter-spacing:.5px;padding:2px 7px;border-radius:20px;margin-bottom:5px;font-family:'DM Sans',sans-serif}
-
 /* EMPTY */
 .empty{text-align:center;padding:44px 20px;color:#c8cdd5}
 .empty-icon{font-size:42px;margin-bottom:12px;opacity:.5}
 .empty-text{font-size:11.5px;letter-spacing:2px;text-transform:uppercase;font-weight:600;color:#c0c8d2}
-
 .panel{display:none}.panel.active{display:block}
-
 /* FOOTER */
 .footer{margin-top:auto;padding:13px 16px;text-align:center;border-top:1px solid #e4e7ed;background:#fff}
 .footer-text{font-size:10px;color:#c0c8d2;letter-spacing:1.2px;text-transform:uppercase;font-weight:600}
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- ═══════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-logo">
+    <div class="login-icon">✚</div>
+    <div>
+      <div class="login-brand-name">SPAZIO</div>
+      <div class="login-brand-sub">CLÍNICA</div>
+    </div>
+  </div>
+  <div class="login-card">
+    <div class="login-title">Iniciar sesión</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-username" type="text" placeholder="Tu usuario" autocomplete="username" autocapitalize="none"/>
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') doLogin()"/>
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+  <div class="login-footer">Spazio Clínica · Uso interno</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     ADMIN PANEL
+═══════════════════════════════════════ -->
+<div id="admin-panel">
+  <div class="admin-header">
+    <div class="admin-header-row">
+      <div class="admin-title">👥 Administrar usuarios</div>
+      <button class="admin-back" onclick="closeAdmin()">← Volver</button>
+    </div>
+  </div>
+  <div class="admin-body">
+    <!-- Create user -->
+    <div>
+      <div class="admin-section-title">Nuevo usuario</div>
+      <div class="admin-card">
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <span class="admin-field-label">Usuario</span>
+            <input class="admin-input" id="new-username" type="text" placeholder="nombre_usuario" autocapitalize="none"/>
+          </div>
+          <div class="admin-field">
+            <span class="admin-field-label">Contraseña</span>
+            <input class="admin-input" id="new-password" type="password" placeholder="••••••"/>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <span class="admin-field-label">Rol</span>
+            <select class="admin-select" id="new-role">
+              <option value="user">Usuario</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-msg" id="create-msg"></div>
+        <button class="admin-btn-create" id="create-btn" onclick="createUser()">+ Crear usuario</button>
+      </div>
+    </div>
+    <!-- User list -->
+    <div>
+      <div class="admin-section-title">Usuarios registrados</div>
+      <div id="users-list" style="display:flex;flex-direction:column;gap:10px">
+        <div style="text-align:center;padding:24px;color:#b0b8c4;font-size:13px">Cargando usuarios…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit password modal -->
+<div id="edit-modal">
+  <div class="edit-modal-card">
+    <div class="edit-modal-title">Cambiar contraseña</div>
+    <input class="admin-input" id="edit-user-id" type="hidden"/>
+    <div class="admin-field" style="margin-bottom:0">
+      <span class="admin-field-label" style="margin-bottom:6px;display:block">Nueva contraseña</span>
+      <input class="admin-input" id="edit-password" type="password" placeholder="Nueva contraseña"/>
+    </div>
+    <div class="edit-modal-actions">
+      <button class="edit-modal-cancel" onclick="closeEditModal()">Cancelar</button>
+      <button class="edit-modal-save" onclick="savePassword()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MAIN APP (UNCHANGED STRUCTURE)
+═══════════════════════════════════════ -->
+<div class="app" id="main-app" style="display:none">
 
   <div class="header">
     <div class="brand">
@@ -120,6 +307,14 @@ html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
       <div>
         <div class="brand-name">SPAZIO</div>
         <div class="brand-sub">CLÍNICA</div>
+      </div>
+    </div>
+    <!-- User bar injected here -->
+    <div class="user-bar">
+      <div class="user-greeting">Hola, <span id="greeting-name">—</span></div>
+      <div class="header-actions">
+        <button class="btn-admin" id="btn-admin" onclick="openAdmin()" style="display:none">⚙ Admin</button>
+        <button class="btn-logout" onclick="doLogout()">Salir</button>
       </div>
     </div>
     <div class="header-subtitle">Codificador Médico</div>
@@ -137,7 +332,7 @@ html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
     </div>
   </div>
 
-  <!-- CIE-9 -->
+  <!-- CIE-9 (UNCHANGED) -->
   <div class="panel active" id="panel-cie">
     <div class="section-label">
       <div class="section-bar bar-cie"></div>
@@ -162,7 +357,7 @@ html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
     </div>
   </div>
 
-  <!-- CPT -->
+  <!-- CPT (UNCHANGED) -->
   <div class="panel" id="panel-cpt">
     <div class="section-label">
       <div class="section-bar bar-cpt"></div>
@@ -191,7 +386,277 @@ html,body{height:100%;background:#eef0f4;font-family:'DM Sans',sans-serif}
 </div>
 
 <script>
-// ── SYSTEM PROMPTS ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// SUPABASE CONFIG
+// Reemplaza con tus valores de Supabase
+// ══════════════════════════════════════════════════════════════
+const SUPABASE_URL  = 'SUPABASE_URL_HERE';
+const SUPABASE_ANON = 'SUPABASE_ANON_KEY_HERE';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ══════════════════════════════════════════════════════════════
+// SESSION
+// ══════════════════════════════════════════════════════════════
+let currentUser = null;
+
+function saveSession(user) {
+  localStorage.setItem('spazio_session', JSON.stringify(user));
+}
+function loadSession() {
+  try { return JSON.parse(localStorage.getItem('spazio_session')); } catch { return null; }
+}
+function clearSession() {
+  localStorage.removeItem('spazio_session');
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOT — check existing session
+// ══════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = loadSession();
+  if (saved && saved.username) {
+    currentUser = saved;
+    enterApp(saved);
+  }
+  // Focus username field
+  document.getElementById('login-username').focus();
+});
+
+// ══════════════════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════════════════
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const btn      = document.getElementById('login-btn');
+  const errEl    = document.getElementById('login-error');
+
+  if (!username || !password) {
+    showLoginError('Ingresa usuario y contraseña.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Verificando…';
+  errEl.style.display = 'none';
+
+  try {
+    const { data, error } = await sb
+      .from('app_users')
+      .select('id, username, role, active')
+      .eq('username', username)
+      .eq('password', password)
+      .single();
+
+    if (error || !data) {
+      showLoginError('Usuario o contraseña incorrectos.');
+      return;
+    }
+    if (!data.active) {
+      showLoginError('Tu cuenta está desactivada. Contacta al administrador.');
+      return;
+    }
+
+    currentUser = { id: data.id, username: data.username, role: data.role };
+    saveSession(currentUser);
+    enterApp(currentUser);
+
+  } catch(e) {
+    showLoginError('Error de conexión. Intenta de nuevo.');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function enterApp(user) {
+  document.getElementById('login-screen').style.display  = 'none';
+  document.getElementById('main-app').style.display = 'flex';
+  document.getElementById('greeting-name').textContent = user.username;
+  if (user.role === 'admin') {
+    document.getElementById('btn-admin').style.display = 'inline-flex';
+  }
+  // Clear login fields
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOGOUT
+// ══════════════════════════════════════════════════════════════
+function doLogout() {
+  clearSession();
+  currentUser = null;
+  document.getElementById('main-app').style.display  = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('btn-admin').style.display = 'none';
+  setTimeout(()=> document.getElementById('login-username').focus(), 100);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN PANEL
+// ══════════════════════════════════════════════════════════════
+async function openAdmin() {
+  document.getElementById('admin-panel').style.display = 'flex';
+  await loadUsers();
+}
+function closeAdmin() {
+  document.getElementById('admin-panel').style.display = 'none';
+}
+
+async function loadUsers() {
+  const list = document.getElementById('users-list');
+  list.innerHTML = '<div style="text-align:center;padding:24px;color:#b0b8c4;font-size:13px">Cargando…</div>';
+  try {
+    const { data, error } = await sb
+      .from('app_users')
+      .select('id, username, role, active, created_at')
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    if (!data.length) {
+      list.innerHTML = '<div style="text-align:center;padding:24px;color:#b0b8c4;font-size:13px">No hay usuarios.</div>';
+      return;
+    }
+
+    list.innerHTML = data.map(u => `
+      <div class="user-item">
+        <div class="user-avatar">${u.username.charAt(0).toUpperCase()}</div>
+        <div class="user-info">
+          <div class="user-name">${u.username}</div>
+          <div class="user-meta">
+            <span class="user-role-badge role-${u.role}">${u.role}</span>
+          </div>
+        </div>
+        <div class="status-dot ${u.active ? 'dot-active' : 'dot-inactive'}" title="${u.active ? 'Activo' : 'Inactivo'}"></div>
+        <div class="user-actions">
+          <button class="ua-btn ${u.active ? 'toggle-on' : 'toggle-off'}"
+            onclick="toggleUser('${u.id}', ${u.active})"
+            title="${u.active ? 'Desactivar' : 'Activar'}">
+            ${u.active ? 'ON' : 'OFF'}
+          </button>
+          <button class="ua-btn" onclick="openEditModal('${u.id}')" title="Cambiar contraseña">🔑</button>
+          <button class="ua-btn danger" onclick="deleteUser('${u.id}', '${u.username}')" title="Eliminar">✕</button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:#c0392b;font-size:13px">Error al cargar usuarios.</div>';
+    console.error(e);
+  }
+}
+
+async function createUser() {
+  const username = document.getElementById('new-username').value.trim();
+  const password = document.getElementById('new-password').value.trim();
+  const role     = document.getElementById('new-role').value;
+  const btn      = document.getElementById('create-btn');
+
+  if (!username || !password) {
+    showAdminMsg('create-msg', 'error', 'Completa usuario y contraseña.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creando…';
+
+  try {
+    const { error } = await sb.from('app_users').insert([{
+      username, password, role, active: true
+    }]);
+
+    if (error) {
+      if (error.code === '23505') showAdminMsg('create-msg', 'error', 'Ese usuario ya existe.');
+      else showAdminMsg('create-msg', 'error', 'Error al crear usuario.');
+      return;
+    }
+
+    showAdminMsg('create-msg', 'success', `Usuario "${username}" creado correctamente.`);
+    document.getElementById('new-username').value = '';
+    document.getElementById('new-password').value = '';
+    document.getElementById('new-role').value = 'user';
+    await loadUsers();
+
+  } catch(e) {
+    showAdminMsg('create-msg', 'error', 'Error inesperado.');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '+ Crear usuario';
+  }
+}
+
+async function toggleUser(id, currentActive) {
+  try {
+    const { error } = await sb
+      .from('app_users')
+      .update({ active: !currentActive })
+      .eq('id', id);
+    if (error) throw error;
+    await loadUsers();
+  } catch(e) {
+    alert('Error al cambiar estado del usuario.');
+    console.error(e);
+  }
+}
+
+async function deleteUser(id, username) {
+  if (!confirm(`¿Eliminar el usuario "${username}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    const { error } = await sb.from('app_users').delete().eq('id', id);
+    if (error) throw error;
+    await loadUsers();
+  } catch(e) {
+    alert('Error al eliminar usuario.');
+    console.error(e);
+  }
+}
+
+function openEditModal(id) {
+  document.getElementById('edit-user-id').value = id;
+  document.getElementById('edit-password').value = '';
+  document.getElementById('edit-modal').style.display = 'flex';
+  setTimeout(()=> document.getElementById('edit-password').focus(), 100);
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+}
+
+async function savePassword() {
+  const id       = document.getElementById('edit-user-id').value;
+  const password = document.getElementById('edit-password').value.trim();
+  if (!password) { alert('Ingresa una nueva contraseña.'); return; }
+  try {
+    const { error } = await sb.from('app_users').update({ password }).eq('id', id);
+    if (error) throw error;
+    closeEditModal();
+    await loadUsers();
+  } catch(e) {
+    alert('Error al guardar contraseña.');
+    console.error(e);
+  }
+}
+
+function showAdminMsg(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = `admin-msg ${type}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(()=>{ el.style.display='none'; }, 3500);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── EXISTING APP LOGIC (100% UNCHANGED) ──────────────────────
+// ══════════════════════════════════════════════════════════════
+
 const SYSTEM = {
   cie: `Eres un codificador médico experto en ICD-9/CIE-9 para seguros médicos.
 
@@ -224,11 +689,9 @@ RESPONDE ÚNICAMENTE con este JSON (sin markdown, sin texto extra, sin explicaci
 {"results":[{"code":"58150","diagnosis":"Histerectomía abdominal total"},{"code":"58570","diagnosis":"Histerectomía laparoscópica total"},{"code":"58260","diagnosis":"Histerectomía vaginal"},{"code":"58180","diagnosis":"Histerectomía abdominal subtotal"},{"code":"58275","diagnosis":"Histerectomía vaginal con reparación"},{"code":"58552","diagnosis":"Histerectomía laparoscópica vaginal"}]}`
 };
 
-// ── STATE ───────────────────────────────────────────────────────
 const history = { cie: [], cpt: [] };
 const busy    = { cie: false, cpt: false };
 
-// ── TABS ────────────────────────────────────────────────────────
 function switchTab(t) {
   ['cie','cpt'].forEach(id => {
     document.getElementById('panel-'+id).classList.toggle('active', id===t);
@@ -242,7 +705,6 @@ function onInput(t) {
 }
 function onKey(e,t){ if(e.key==='Enter') doSearch(t); }
 
-// ── UI HELPERS ──────────────────────────────────────────────────
 function setStatus(t, type, msg) {
   const el = document.getElementById('status-'+t);
   if (!msg) { el.innerHTML=''; return; }
@@ -284,7 +746,6 @@ function renderResults(t, results, usedWeb) {
   const extra = results.slice(3);
 
   function card(r, i, isTop) {
-    const globalIdx = i < 3 ? i : i; // index for copy btn id
     const rankClass = isTop ? `top-rank-${t}` : '';
     const cardClass = isTop ? `top-card${t==='cpt'?'-cpt':''}` : 'extra-card';
     const webTag = usedWeb && i===0 ? '<span class="suggest-tag">🔍 Sugerencia web</span>' : '';
@@ -349,24 +810,18 @@ function clearAll(t) {
   renderHistory(t);
 }
 
-// ── JSON EXTRACTOR (robust) ─────────────────────────────────────
 function extractJSON(text) {
   if (!text) return null;
-  // 1. Direct parse
   try { const p=JSON.parse(text.trim()); if(p&&p.results) return p; } catch(e){}
-  // 2. Strip markdown fences
   const stripped = text.replace(/```(?:json)?[\s\S]*?```/g,'').trim();
   try { const p=JSON.parse(stripped); if(p&&p.results) return p; } catch(e){}
-  // 3. Find first { ... } block
   const m = text.match(/\{[\s\S]*?"results"[\s\S]*?\}/);
   if(m){ try { const p=JSON.parse(m[0]); if(p&&p.results) return p; } catch(e){} }
-  // 4. Find any JSON object
   const m2 = text.match(/\{[\s\S]*\}/);
   if(m2){ try { const p=JSON.parse(m2[0]); if(p&&p.results) return p; } catch(e){} }
   return null;
 }
 
-// ── API CALL ────────────────────────────────────────────────────
 async function callAPI(t, query) {
   const body = {
     model: 'claude-sonnet-4-6',
@@ -376,7 +831,7 @@ async function callAPI(t, query) {
     messages: [{ role: 'user', content: query }]
   };
 
-const res = await fetch('/api/search', {
+  const res = await fetch('/api/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
@@ -390,15 +845,10 @@ const res = await fetch('/api/search', {
   return res.json();
 }
 
-// ── PARSE RESPONSE ──────────────────────────────────────────────
 function parseResponse(data) {
   const blocks = data.content || [];
   let usedWeb = blocks.some(b => b.type === 'tool_use' && b.name === 'web_search');
-
-  // Collect all text blocks, try each for valid JSON
   const texts = blocks.filter(b => b.type === 'text').map(b => b.text);
-
-  // Try last text block first (most likely the final answer)
   for (let i = texts.length - 1; i >= 0; i--) {
     const parsed = extractJSON(texts[i]);
     if (parsed) return { parsed, usedWeb };
@@ -406,7 +856,6 @@ function parseResponse(data) {
   return { parsed: null, usedWeb };
 }
 
-// ── MAIN SEARCH ─────────────────────────────────────────────────
 async function doSearch(t) {
   const q = document.getElementById('input-'+t).value.trim();
   if (!q || busy[t]) return;
